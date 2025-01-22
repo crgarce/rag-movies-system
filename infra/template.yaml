@@ -1,4 +1,4 @@
-AWSTemplateFormatVersion: '2010-09-09'
+AWSTemplateFormatVersion: "2010-09-09"
 Description: Deploy RAG system for movies
 
 Parameters:
@@ -25,7 +25,7 @@ Resources:
       EnableDnsHostnames: true
       Tags:
         - Key: Name
-          Value: RDS-VPC
+          Value: RAG-VPC
 
   # Subnets
   PublicSubnetA:
