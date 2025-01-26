@@ -31,3 +31,6 @@ logs-indexer:
 
 connect-db:
 	docker exec -it postgres_local psql -U ragadmin -d rag_db
+
+py-dev-env:
+	sudo apt-get update && sudo apt install -y libpq-dev python3-dev build-essential
