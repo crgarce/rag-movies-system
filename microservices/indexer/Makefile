@@ -9,10 +9,10 @@ install:
 	pip install -r requirements.txt
 
 venv:
-	python3 -m venv venv && source venv/bin/activate
+	python3 -m venv venv
 
-reset:
-	docker compose down --volumes && docker compose build && docker compose up
+build-indexer:
+	docker compose build && docker compose up
 
 down:
 	docker compose down --volumes
@@ -40,3 +40,15 @@ py-dev-env:
 
 delete-pycache:
 	find ./app -type d -name "__pycache__" -exec rm -rfv {} +
+
+up-ms:
+	python -m uvicorn app.main:app --reload
+
+build-ms:
+	docker build -t indexer-service .
+
+run-ms:
+	docker run --rm -d --name indexer-service --network host --env-file .env indexer-service
+
+stop-ms:
+	docker stop indexer-service
