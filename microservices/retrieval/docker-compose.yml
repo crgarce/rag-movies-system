@@ -1,28 +1,16 @@
 services:
-  # indexer:
-  #   build:
-  #     context: .
-  #   ports:
-  #     - "8000:8000"
-  #   environment:
-  #     - OPENAI_API_KEY=${OPENAI_API_KEY}
-  #     - DB_HOST=${DB_HOST}
-  #     - DB_NAME=${DB_NAME}
-  #     - DB_USER=${DB_USER}
-  #     - DB_PASSWORD=${DB_PASSWORD}
-  #   depends_on:
-  #     - db
-  #   volumes:
-  #     - ./resources:/resources
-
-  db:
-    image: ankane/pgvector
-    container_name: postgres_local
-    environment:
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_DB: ${DB_NAME}
+  retrieval:
+    build:
+      context: .
     ports:
-      - "5432:5432"
+      - "8001:8001"
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - DB_HOST=${DB_HOST}
+      - DB_NAME=${DB_NAME}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+    depends_on:
+      - db
     volumes:
-      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./resources:/resources

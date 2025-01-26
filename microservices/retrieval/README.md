@@ -12,30 +12,30 @@ El proyecto sigue los principios de **arquitectura limpia** para garantizar modu
 ├── app/
 │   ├── application/
 │   │   └── usecases/
-│   │       └── index_embeddings.py  # Caso de uso para indexar embeddings.
+│   │       └── question_answer.py
 │   ├── core/
 │   │   ├── middleware/
-│   │   │   └── validate_consumer.py  # Middleware para validar Consumer-ID.
+│   │   │   └── validate_consumer.py
 │   │   ├── models/
-│   │   │   └── models.py  # Modelos principales del dominio.
+│   │   │   └── models.py
 │   │   ├── utils/
-│   │       ├── config.py  # Configuraciones globales.
-│   │       └── logger.py  # Logger centralizado.
+│   │   │   ├── config.py
+│   │   │   └── logger.py
 │   ├── infra/
 │   │   ├── repositories/
-│   │   │   └── pgvector_repository.py  # Repositorio para la base de datos PostgreSQL.
+│   │   │   └── pgvector_repository.py
 │   │   ├── services/
-│   │   │   ├── csv_processor.py  # Procesador de archivos CSV.
-│   │   │   └── embedding_service.py  # Generación de embeddings con OpenAI.
-│   │   └── container.py  # Contenedor para manejar dependencias.
+│   │   │   ├── embedding_service.py
+│   │   │   └── response_generator.py
+│   │   └── container.py
+│   └── main.py
 ├── db/
-│   └── init.sql  # Script SQL para inicializar la base de datos.
-├── .env  # Variables de entorno.
-├── Dockerfile  # Configuración para crear la imagen del microservicio.
-├── docker-compose.yml  # Orquestación de servicios.
-├── Makefile  # Comandos automatizados para desarrollo.
-├── requirements.txt  # Dependencias del proyecto.
-└── main.py  # Punto de entrada principal.
+│   └── init.sql
+├── .env
+├── Dockerfile
+├── docker-compose.yml
+├── Makefile
+└── requirements.txt
 ```
 
 ---

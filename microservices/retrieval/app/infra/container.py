@@ -2,8 +2,8 @@ from app.core.utils.config import Config
 from app.core.utils.logger import get_logger
 from app.infra.repositories.pgvector_repository import PgVectorRepository
 from app.infra.services.embedding_service import EmbeddingService
-from app.infra.services.csv_processor import CsvProcessor
-from app.application.usecases.index_embeddings import IndexEmbeddingsUseCase
+from app.infra.services.response_generator import ResponseGenerator
+from app.application.usecases.question_answer import QuestionAnswerUseCase
 
 class Container:
     """
@@ -13,7 +13,8 @@ class Container:
         config (Config): Configuraciones globales de la aplicación.
         pg_repository (PgVectorRepository): Repositorio para interactuar con la base de datos.
         embedding_service (EmbeddingService): Servicio para generación de embeddings.
-        index_embeddings_use_case (IndexEmbeddingsUseCase): Caso de uso para indexar películas.
+        response_generator (ResponseGenerator): Servicio para generar respuestas.
+        question_answer_use_case (QuestionAnswerUseCase): Caso de uso para gestionar preguntas.
     """
 
     def __init__(self):
@@ -28,37 +29,35 @@ class Container:
             db_port=self.config.DB_PORT,
             db_name=self.config.DB_NAME,
             db_user=self.config.DB_USER,
-            db_password=self.config.DB_PASSWORD,
+            db_password=self.config.DB_PASSWORD
         )
         self.logger.info("Repositorio de base de datos inicializado.")
 
         self.embedding_service = EmbeddingService(
             api_key=self.config.OPENAI_API_KEY,
-            model=self.config.EMBEDDING_MODEL,
+            model=self.config.EMBEDDING_MODEL
         )
         self.logger.info("Servicio de embeddings inicializado.")
 
-        self.csv_processor = CsvProcessor()
-        self.logger.info("Servicio de procesamiento de CSV inicializado.")
+        self.response_generator = ResponseGenerator(
+            api_key=self.config.OPENAI_API_KEY,
+            model=self.config.CHAT_COMPLETION_MODEL
+        )
+        self.logger.info("Generador de respuestas inicializado.")
 
-        self.index_embeddings_use_case = IndexEmbeddingsUseCase(
+        self.question_answer_use_case = QuestionAnswerUseCase(
             embedding_service=self.embedding_service,
             repository=self.pg_repository,
-            batch_size=self.config.BATCH_SIZE,
+            response_generator=self.response_generator,
+            top_k=self.config.TOP_K
         )
-        self.logger.info("Caso de uso para indexar embeddings inicializado.")
+        self.logger.info("Caso de uso inicializado.")
 
-    def get_csv_processor(self):
+    def get_question_answer_use_case(self) -> QuestionAnswerUseCase:
         """
-        Retorna el procesador de archivos CSV.
+        Retorna el caso de uso para gestionar preguntas y respuestas.
         """
-        return self.csv_processor
-
-    def get_index_embeddings_use_case(self):
-        """
-        Retorna el caso de uso para indexar los embeddings.
-        """
-        return self.index_embeddings_use_case
+        return self.question_answer_use_case
 
     def close_resources(self):
         """

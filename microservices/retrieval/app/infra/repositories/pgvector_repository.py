@@ -1,9 +1,8 @@
 from typing import List
 from contextlib import contextmanager
 import psycopg2
-from psycopg2.extras import execute_values
 from app.core.utils.logger import get_logger
-from app.core.models.models import MovieWithEmbedding
+from app.core.models.models import Movie
 
 
 class PgVectorRepository:
@@ -41,44 +40,42 @@ class PgVectorRepository:
     @contextmanager
     def get_cursor(self):
         """
-        Proporciona un cursor de base de datos gestionado en un contexto.
+        Proporciona un cursor gestionado con cierre automático.
         """
         try:
             with self.connection.cursor() as cursor:
                 yield cursor
-            self.connection.commit()
-            self.logger.info("Transacción de base de datos completada exitosamente.")
         except Exception as e:
             self.connection.rollback()
-            raise RuntimeError(f"Error en la base de datos: {str(e)}")
+            self.logger.error(f"Error al manejar el cursor: {str(e)}")
+            raise RuntimeError("Error en la base de datos.") from e
 
-    def save_batch(self, movies_with_embeddings: List[MovieWithEmbedding]) -> None:
+    def query_similar_movies(self, embedding: List[float], top_k: int) -> List[Movie]:
         """
-        Inserta un lote de películas con sus embeddings en la base de datos.
+        Consulta las películas más similares utilizando similitud vectorial. <->
 
-        :param movies_with_embeddings: Lista de objetos MovieWithEmbedding.
+        :param embedding: Embedding de la pregunta.
+        :param top_k: Número máximo de resultados relevantes a recuperar.
+        :return: Lista de objetos Movie con los resultados más relevantes.
         """
-        insert_query = """
-        INSERT INTO movies (title, image, plot, embedding)
-        VALUES %s
+        query = """
+        SELECT title, image, plot
+        FROM movies
+        ORDER BY embedding <-> %s
+        LIMIT %s;
         """
-
-        values = [
-            (
-                movie_with_embedding.movie.title,
-                movie_with_embedding.movie.image,
-                movie_with_embedding.movie.plot,
-                movie_with_embedding.embedding.vector
-            )
-            for movie_with_embedding in movies_with_embeddings
-        ]
-        self.logger.info(f"Insertando {len(values)} registros en la base de datos...")
         try:
             with self.get_cursor() as cursor:
-                execute_values(cursor, insert_query, values)
+                cursor.execute(query, (embedding, top_k))
+                results = cursor.fetchall()
+                self.logger.info(f"Películas encontradas: {len(results)}")
+                return [
+                    Movie(title=row[0], image=row[1], plot=row[2])
+                    for row in results
+                ]
         except Exception as e:
-            self.logger.error(f"Error al insertar el lote: {str(e)}")
-            raise
+            self.logger.error(f"Error al consultar películas: {str(e)}")
+            raise RuntimeError("Error al realizar la consulta en la base de datos.") from e
 
     def close_connection(self):
         """

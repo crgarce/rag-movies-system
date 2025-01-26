@@ -1,11 +1,10 @@
-from fastapi import FastAPI, Request, File, UploadFile, HTTPException
+from fastapi import FastAPI, Request, HTTPException
 from fastapi.responses import JSONResponse
-from app.infra.container import Container
-from app.core.utils.logger import get_logger
-from app.core.middleware.validate_consumer import validate_consumer_id
+from infra.container import Container
+from core.middleware.validate_consumer import validate_consumer_id
+from core.utils.logger import get_logger
 
 app = FastAPI()
-
 logger = get_logger("main")
 
 app.middleware("http")(validate_consumer_id)
@@ -25,19 +24,18 @@ async def health():
 async def global_exception_handler(request: Request, exc: Exception):
     """
     Manejador global para excepciones no controladas.
-    Desempaqueta ExceptionGroup si es necesario.
+
+    :param request: Objeto Request de FastAPI.
+    :param exc: Excepción capturada.
+    :return: Respuesta HTTP con mensaje genérico.
     """
     if isinstance(exc, ExceptionGroup):
         logger.error(f"Se capturó un ExceptionGroup: {exc}")
-        # Busca si contiene un HTTPException
         for inner_exc in exc.exceptions:
             if isinstance(inner_exc, HTTPException):
-                # Si encuentra un HTTPException, delega al manejador HTTPException
                 return await http_exception_handler(request, inner_exc)
     elif isinstance(exc, HTTPException):
         return await http_exception_handler(request, exc)
-
-    # Manejo genérico de excepciones no controladas
     logger.error(f"Error inesperado: {exc} en {request.url}")
     return JSONResponse(
         status_code=500,
@@ -48,37 +46,31 @@ async def global_exception_handler(request: Request, exc: Exception):
 async def http_exception_handler(request: Request, exc: HTTPException):
     """
     Manejador para excepciones HTTP controladas.
+
+    :param request: Objeto Request de FastAPI.
+    :param exc: Excepción HTTP.
+    :return: Respuesta HTTP con código de estado y detalle.
     """
     logger.warning(f"HTTPException: {exc.detail} en {request.url}")
     return JSONResponse(status_code=exc.status_code, content={"detail": exc.detail})
 
-@app.post("/movies-indexer/")
-async def movies_indexer(file: UploadFile = File(...)):
+@app.post("/question-answer/")
+async def question_answer(request: Request, question: str):
     """
-    Endpoint para subir un archivo CSV con información de películas.
+    Endpoint principal para responder preguntas basadas en la base de conocimiento.
 
-    :param file: Archivo CSV subido por el usuario.
-    :return: Respuesta con el resultado del procesamiento.
+    :param request: Objeto Request de FastAPI.
+    :param question: Pregunta enviada por el usuario.
+    :return: Respuesta generada.
     """
     try:
-        csv_processor = container.get_csv_processor()
-        movies = csv_processor.process_csv(file)
-
-        use_case = container.get_index_embeddings_use_case()
-        use_case.execute(movies)
-
-        return {
-            "status_code": 200,
-            "message": f"Archivo procesado exitosamente. Se indexaron {len(movies)} películas."
-        }
-
+        logger.info(f"Pregunta recibida: {question}")
+        use_case = container.get_question_answer_use_case()
+        response = use_case.execute(question)
+        return {"status_code": 200, "message": "Respuesta generada con éxito.", "data": response}
     except HTTPException as e:
         return {"status_code": e.status_code, "message": e.detail}
 
     except Exception as e:
-        logger.error(f"Error inesperado al procesar el archivo: {e}")
-        return {
-            "status_code": 500,
-            "message": "Error interno del servidor. Por favor contacte al administrador."
-        }
-
+        logger.error(f"Error inesperado: {str(e)}")
+        raise HTTPException(status_code=500, detail="Error interno del servidor.")

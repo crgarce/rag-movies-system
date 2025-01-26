@@ -19,8 +19,8 @@ class Config:
 
     OPENAI_API_KEY: str = os.getenv("OPENAI_API_KEY", None)
     EMBEDDING_MODEL: str = os.getenv("EMBEDDING_MODEL", "text-embedding-ada-002")
-    BATCH_SIZE: int = int(os.getenv("BATCH_SIZE", 10))
-    EMBEDDING_DIMENSION: int = int(os.getenv("EMBEDDING_DIMENSION", 768))
+    CHAT_COMPLETION_MODEL: str = os.getenv("CHAT_COMPLETION_MODEL", "gpt-4")
+    TOP_K: int = int(os.getenv("TOP_K", 5))
 
     CONSUMER_ID: str = os.getenv("CONSUMER_ID", None)
 
