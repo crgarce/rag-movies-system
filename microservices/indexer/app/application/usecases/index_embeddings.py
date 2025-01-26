@@ -31,7 +31,7 @@ class IndexEmbeddingsUseCase:
         for i in range(0, len(movies), self.batch_size):
             batch = movies[i:i + self.batch_size]
             self.logger.info(f"Procesando lote {i // self.batch_size + 1} \
-                            con {len(batch)} películas.")
+            con {len(batch)} películas.")
 
             texts_to_embed = [
                 f"Title: {movie.title}. Image: {movie.image}. Plot: {movie.plot}"

@@ -1,4 +1,5 @@
 import pandas as pd
+from io import StringIO
 from fastapi import HTTPException
 from app.core.models.models import Movie
 from app.core.utils.logger import get_logger
@@ -27,7 +28,7 @@ class CsvProcessor:
 
         try:
             contents = file.file.read().decode("utf-8")
-            df = pd.read_csv(pd.compat.StringIO(contents), encoding="utf-8-sig")
+            df = pd.read_csv(StringIO(contents), encoding="utf-8-sig")
 
             required_columns = {"title", "image", "plot"}
             if not required_columns.issubset(df.columns):
