@@ -1,12 +1,12 @@
 from fastapi import Request, HTTPException
-from core.utils.config import Config
-from core.utils.logger import get_logger
+from app.core.utils.config import Config
+from app.core.utils.logger import get_logger
 
 logger = get_logger("middleware")
 
 async def validate_consumer_id(request: Request, call_next):
     """
-    Middleware para validar la Key (Consumer-ID) en las cabeceras.
+    Middleware para validar la Key (x-consumer-id) en las cabeceras.
 
     :param request: Objeto Request de FastAPI.
     :param call_next: Llamada al siguiente middleware o endpoint.
@@ -15,9 +15,9 @@ async def validate_consumer_id(request: Request, call_next):
     """
     consumer_id = request.headers.get("x-consumer-id")
     if consumer_id != Config.CONSUMER_ID:
-        logger.warning("Intento de acceso con Consumer-ID inválido.")
-        raise HTTPException(status_code=403, detail="Consumer-ID inválido.")
+        logger.warning("Intento de acceso con x-consumer-id inválido.")
+        raise HTTPException(status_code=403, detail="x-consumer-id inválido.")
 
-    logger.info("Consumer-ID válido.")
+    logger.info("x-consumer-id válido.")
     response = await call_next(request)
     return response

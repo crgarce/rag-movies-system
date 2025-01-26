@@ -1,6 +1,6 @@
 from typing import List
 import openai
-from core.utils.logger import get_logger
+from app.core.utils.logger import get_logger
 from tenacity import retry, stop_after_attempt, wait_exponential
 
 class EmbeddingService:
@@ -34,7 +34,7 @@ class EmbeddingService:
             raise ValueError("La lista de textos está vacía. No se pueden generar embeddings.")
 
         openai.api_key = self.api_key
-        max_batch_size = 100  # Tamaño máximo permitido por la API
+        max_batch_size = 100
         results = []
 
         try:

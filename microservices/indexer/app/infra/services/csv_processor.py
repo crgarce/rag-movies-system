@@ -1,7 +1,7 @@
 import pandas as pd
-from core.models.models import Movie
 from fastapi import HTTPException
-from core.utils.logger import get_logger
+from app.core.models.models import Movie
+from app.core.utils.logger import get_logger
 
 class CsvProcessor:
     """

@@ -1,6 +1,6 @@
 from typing import List
-from core.models.models import Movie, Embedding, MovieWithEmbedding
-from core.utils.logger import get_logger
+from app.core.models.models import Movie, Embedding, MovieWithEmbedding
+from app.core.utils.logger import get_logger
 
 class IndexEmbeddingsUseCase:
     """

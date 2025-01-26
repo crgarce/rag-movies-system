@@ -2,8 +2,8 @@ from typing import List
 from contextlib import contextmanager
 import psycopg2
 from psycopg2.extras import execute_values
-from core.utils.logger import get_logger
-from core.models.models import MovieWithEmbedding
+from app.core.utils.logger import get_logger
+from app.core.models.models import MovieWithEmbedding
 
 
 class PgVectorRepository:
