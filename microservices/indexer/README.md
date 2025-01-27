@@ -10,6 +10,7 @@ El proyecto sigue los principios de **arquitectura limpia** para garantizar modu
 ```plaintext
 /
 ├── app/
+│   ├── main.py  # Punto de entrada principal.
 │   ├── application/
 │   │   └── usecases/
 │   │       └── index_embeddings.py  # Caso de uso para indexar embeddings.
@@ -34,8 +35,7 @@ El proyecto sigue los principios de **arquitectura limpia** para garantizar modu
 ├── Dockerfile  # Configuración para crear la imagen del microservicio.
 ├── docker-compose.yml  # Orquestación de servicios.
 ├── Makefile  # Comandos automatizados para desarrollo.
-├── requirements.txt  # Dependencias del proyecto.
-└── main.py  # Punto de entrada principal.
+└── requirements.txt  # Dependencias del proyecto.
 ```
 
 ---
