@@ -1,6 +1,6 @@
 # Microservicio: Movies Indexer
 
-Este microservicio es responsable de procesar un archivo CSV con información de películas, generar embeddings a partir de las descripciones utilizando la API de OpenAI, e indexarlos en una base de datos PostgreSQL con soporte para vectores gracias a PGVector.
+El microservicio `indexer` es responsable de procesar un archivo CSV con información de películas, generar embeddings a partir de las descripciones utilizando la API de OpenAI, e indexarlos en una base de datos PostgreSQL con soporte para vectores gracias a PGVector.
 
 ---
 

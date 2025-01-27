@@ -1,22 +1,11 @@
 # Microservicio: Movies Retrieval Generator
 
-Este microservicio es responsable de procesar un archivo CSV con información de películas, generar embeddings a partir de las descripciones utilizando la API de OpenAI, e indexarlos en una base de datos PostgreSQL con soporte para vectores gracias a PGVector.
+El microservicio `retrieval` es una parte fundamental del sistema **RAG (Retrieval-Augmented Generation)**. Su objetivo es recibir preguntas del usuario, buscar información relevante en la base de conocimiento previamente indexada, y generar respuestas claras utilizando la API de OpenAI.
 
 ---
 
 ## Estructura del Proyecto
 El proyecto sigue los principios de **arquitectura limpia** para garantizar modularidad y escalabilidad. A continuación, la estructura principal:
-
-```plaintext
-# Microservicio `retrieval`
-
-El microservicio `retrieval` es una parte fundamental del sistema **RAG (Retrieval-Augmented Generation)**. Su objetivo es recibir preguntas del usuario, buscar información relevante en la base de conocimiento previamente indexada, y generar respuestas claras utilizando la API de OpenAI.
-
----
-
-## **Estructura del Proyecto**
-
-La estructura del proyecto sigue principios de arquitectura limpia para garantizar modularidad, mantenibilidad y facilidad de pruebas.
 
 ```plaintext
 /retrieval
