@@ -1,8 +1,9 @@
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.responses import JSONResponse
-from infra.container import Container
-from core.middleware.validate_consumer import validate_consumer_id
-from core.utils.logger import get_logger
+from app.core.models.requests import QuestionRequest
+from app.infra.container import Container
+from app.core.middleware.validate_consumer import validate_consumer_id
+from app.core.utils.logger import get_logger
 
 app = FastAPI()
 logger = get_logger("main")
@@ -55,7 +56,7 @@ async def http_exception_handler(request: Request, exc: HTTPException):
     return JSONResponse(status_code=exc.status_code, content={"detail": exc.detail})
 
 @app.post("/question-answer/")
-async def question_answer(request: Request, question: str):
+async def question_answer(payload: QuestionRequest):
     """
     Endpoint principal para responder preguntas basadas en la base de conocimiento.
 
@@ -64,6 +65,7 @@ async def question_answer(request: Request, question: str):
     :return: Respuesta generada.
     """
     try:
+        question = payload.question
         logger.info(f"Pregunta recibida: {question}")
         use_case = container.get_question_answer_use_case()
         response = use_case.execute(question)

@@ -1,7 +1,7 @@
 from typing import List
 import openai
-from core.utils.logger import get_logger
 from tenacity import retry, stop_after_attempt, wait_exponential
+from app.core.utils.logger import get_logger
 
 class EmbeddingService:
     """

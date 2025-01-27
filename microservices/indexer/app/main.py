@@ -5,7 +5,6 @@ from app.core.utils.logger import get_logger
 from app.core.middleware.validate_consumer import validate_consumer_id
 
 app = FastAPI()
-
 logger = get_logger("main")
 
 app.middleware("http")(validate_consumer_id)
@@ -29,15 +28,12 @@ async def global_exception_handler(request: Request, exc: Exception):
     """
     if isinstance(exc, ExceptionGroup):
         logger.error(f"Se capturó un ExceptionGroup: {exc}")
-        # Busca si contiene un HTTPException
         for inner_exc in exc.exceptions:
             if isinstance(inner_exc, HTTPException):
-                # Si encuentra un HTTPException, delega al manejador HTTPException
                 return await http_exception_handler(request, inner_exc)
     elif isinstance(exc, HTTPException):
         return await http_exception_handler(request, exc)
 
-    # Manejo genérico de excepciones no controladas
     logger.error(f"Error inesperado: {exc} en {request.url}")
     return JSONResponse(
         status_code=500,
@@ -81,4 +77,3 @@ async def movies_indexer(file: UploadFile = File(...)):
             "status_code": 500,
             "message": "Error interno del servidor. Por favor contacte al administrador."
         }
-

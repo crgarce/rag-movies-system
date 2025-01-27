@@ -1,10 +1,10 @@
 from typing import List
+from fastapi import HTTPException
 from app.core.models.models import Movie, Embedding
 from app.infra.services.embedding_service import EmbeddingService
 from app.infra.repositories.pgvector_repository import PgVectorRepository
 from app.infra.services.response_generator import ResponseGenerator
 from app.core.utils.logger import get_logger
-from fastapi import HTTPException
 
 class QuestionAnswerUseCase:
     """

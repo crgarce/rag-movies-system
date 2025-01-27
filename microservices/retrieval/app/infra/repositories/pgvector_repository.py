@@ -61,7 +61,7 @@ class PgVectorRepository:
         query = """
         SELECT title, image, plot
         FROM movies
-        ORDER BY embedding <-> %s
+        ORDER BY embedding <-> %s::vector
         LIMIT %s;
         """
         try:

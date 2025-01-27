@@ -37,3 +37,9 @@ build-ms:
 
 run-ms:
 	docker run --rm -d --name retrieval-service --network host --env-file .env retrieval-service
+
+delete-pycache:
+	find ./app -type d -name "__pycache__" -exec rm -rfv {} +
+
+up-ms:
+	python -m uvicorn app.main:app --reload

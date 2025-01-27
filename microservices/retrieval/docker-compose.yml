@@ -2,15 +2,10 @@ services:
   retrieval:
     build:
       context: .
+      dockerfile: Dockerfile
+    container_name: retrieval-service
     ports:
       - "8001:8001"
-    environment:
-      - OPENAI_API_KEY=${OPENAI_API_KEY}
-      - DB_HOST=${DB_HOST}
-      - DB_NAME=${DB_NAME}
-      - DB_USER=${DB_USER}
-      - DB_PASSWORD=${DB_PASSWORD}
-    depends_on:
-      - db
-    volumes:
-      - ./resources:/resources
+    env_file:
+      - .env
+    restart: always
