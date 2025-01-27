@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request, HTTPException
+from fastapi import FastAPI, Request, HTTPException, Depends
 from fastapi.responses import JSONResponse
 from app.core.models.requests import QuestionRequest
 from app.infra.container import Container
@@ -10,7 +10,8 @@ logger = get_logger("main")
 
 app.middleware("http")(validate_consumer_id)
 
-container = Container()
+def get_container():
+    return Container()
 
 @app.get("/health/")
 async def health():
@@ -56,7 +57,7 @@ async def http_exception_handler(request: Request, exc: HTTPException):
     return JSONResponse(status_code=exc.status_code, content={"detail": exc.detail})
 
 @app.post("/question-answer/")
-async def question_answer(payload: QuestionRequest):
+async def question_answer(payload: QuestionRequest, container: Container = Depends(get_container)):
     """
     Endpoint principal para responder preguntas basadas en la base de conocimiento.
 

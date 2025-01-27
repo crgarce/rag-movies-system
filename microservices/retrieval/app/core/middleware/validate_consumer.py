@@ -18,5 +18,5 @@ async def validate_consumer_id(request: Request, call_next):
         logger.warning("Intento de acceso con x-consumer-id inválido.")
         raise HTTPException(status_code=403, detail="x-consumer-id inválido.")
 
-    logger.debug("x-consumer-id válido.")
+    logger.info("x-consumer-id válido.")
     return await call_next(request)
