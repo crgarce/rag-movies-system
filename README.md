@@ -1,84 +1,153 @@
-# Proyecto RAG (Retrieval Augmented Generation) para Películas de los Años 1980
+# Sistema RAG - Microservicios `indexer` y `retrieval`
 
-Este proyecto implementa un sistema basado en arquitecturas de RAG (Retrieval Augmented Generation) para responder preguntas relacionadas con una base de conocimiento sobre películas de los años 1980. El sistema utiliza datos indexados en una base de datos vectorial, APIs de modelos de lenguaje, y está desplegado en AWS siguiendo principios de arquitectura limpia.
-
-## Microservicios
-
-### Microservicio 1: Data Ingestion Service
-#### Responsabilidades
-- **Carga y procesamiento del archivo CSV**:
-  - Leer el archivo CSV con información sobre películas.
-  - Normalizar y limpiar los datos para asegurar consistencia en los campos (e.g., títulos, géneros, descripciones).
-- **Vectorización de datos**:
-  - Convertir descripciones y otros textos relevantes de las películas en embeddings utilizando un modelo preentrenado (OpenAI o similar).
-- **Indexación en la base de datos PGVector**:
-  - Insertar los vectores generados y los metadatos asociados (e.g., título, género, año) en PostgreSQL configurado con la extensión PGVector.
-
-#### APIs
-- `POST /ingest`: Recibe el archivo CSV y procesa los datos para indexarlos.
-
-### Microservicio 2: Query Service
-#### Responsabilidades
-- **Recepción de preguntas del usuario**:
-  - Recibir preguntas relacionadas con películas mediante un endpoint REST.
-- **Vectorización de la pregunta**:
-  - Convertir la pregunta en un embedding usando el mismo modelo que en la ingesta.
-- **Búsqueda semántica en PGVector**:
-  - Consultar la base de datos PGVector para recuperar los vectores más similares al embedding de la pregunta.
-- **Generación de respuesta contextual**:
-  - Usar la API de OpenAI para generar una respuesta basada en la pregunta del usuario y los resultados recuperados.
-
-#### APIs
-- `POST /query`: Recibe una pregunta y devuelve una respuesta basada en los datos indexados.
-
-### Microservicio 3: Embedding Service
-#### Responsabilidades
-- **Interacción con OpenAI**:
-  - Encapsular la lógica para generar embeddings utilizando las APIs de OpenAI.
-- **Estandarización del proceso**:
-  - Garantizar que todas las solicitudes de vectorización sigan el mismo formato y configuración.
-
-#### APIs
-- `POST /generate-embedding`: Recibe un texto y devuelve su embedding.
-
-### Microservicio 4: Administration Service
-#### Responsabilidades
-- **Gestión de la base de conocimiento**:
-  - Permitir la actualización, eliminación o reinicio de los datos indexados.
-- **Monitoreo y mantenimiento**:
-  - Proveer endpoints para verificar el estado del sistema (health checks).
-  - Ofrecer estadísticas sobre el uso (e.g., número de preguntas respondidas, datos indexados).
-
-#### APIs
-- `GET /health`: Retorna el estado del sistema.
-- `POST /reset-index`: Reinicia la base de conocimiento.
-
-## Interacciones entre Microservicios
-
-1. **Ingestión de datos**:
-   - El Data Ingestion Service llama al Embedding Service para generar embeddings y luego almacena los datos en PGVector.
-2. **Consultas**:
-   - El Query Service llama al Embedding Service para generar un embedding de la pregunta, consulta PGVector para recuperar los datos relevantes y utiliza OpenAI para generar la respuesta final.
-3. **Administración**:
-   - El Administration Service gestiona las operaciones de mantenimiento y monitoreo del sistema.
-
-## Arquitectura y Componentes en AWS
-
-- **Base de datos**: Amazon RDS con PostgreSQL configurado con PGVector.
-- **Almacenamiento de archivos**: Amazon S3 para almacenar temporalmente archivos CSV.
-- **Servicios de computación**: AWS Lambda o ECS para ejecutar los microservicios.
-- **API Gateway**: Para exponer las APIs de los microservicios.
-- **Monitorización**: CloudWatch para logs y métricas.
-- **Secrets Management**: AWS Secrets Manager para almacenar las claves API de OpenAI y credenciales de la base de datos.
-
-## Diagrama Simplificado de Flujo de Datos
-
-1. El usuario sube un archivo CSV a través del Data Ingestion Service.
-2. Los datos son procesados, vectorizados y almacenados en la base de datos.
-3. El usuario realiza preguntas mediante el Query Service, que genera embeddings, consulta la base de datos y utiliza OpenAI para crear respuestas.
-4. El Administration Service asegura la correcta operación y mantenimiento del sistema.
+Este sistema está compuesto por dos microservicios principales (`indexer` y `retrieval`) y una base de datos PostgreSQL con la extensión **PGVector**. El objetivo del sistema es indexar datos de películas y responder preguntas del usuario utilizando técnicas de **RAG (Retrieval-Augmented Generation)** integradas con la API de OpenAI.
 
 ---
 
-Este sistema asegura una experiencia ágil y eficiente para responder preguntas sobre películas de los años 1980, integrando tecnologías modernas y un diseño modular para facilitar su extensión y mantenimiento.
+## **Microservicios y Componentes**
 
+### **1. Microservicio `indexer`**
+- **Propósito:** Indexa un archivo CSV de datos de películas en una base de datos PostgreSQL con soporte para PGVector.
+- **Endpoint principal:** `/upload-csv/`
+- **Detalles adicionales:** Consulta el archivo `README.md` dentro del directorio del microservicio.
+
+### **2. Microservicio `retrieval`**
+- **Propósito:** Recibe preguntas del usuario, busca información relevante en la base de datos previamente indexada, y genera respuestas utilizando la API de OpenAI.
+- **Endpoint principal:** `/question-answer/`
+- **Detalles adicionales:** Consulta el archivo `README.md` dentro del directorio del microservicio.
+
+### **3. Base de datos PostgreSQL**
+- **Imagen:** `ankane/pgvector`
+- **Propósito:** Almacenar los datos de las películas y sus embeddings generados para búsquedas eficientes basadas en similitud vectorial.
+
+---
+
+## **Estructura del Proyecto**
+
+```plaintext
+/rag-system
+├── microservices/
+│   ├── indexer/
+│   │   ├── app/  # Código fuente del microservicio indexer
+│   │   ├── db/  # Script de inicializacion para la BD
+│   │   ├── Dockerfile
+│   │   ├── docker-compose.yml  # Levanta el indexer y la base de datos
+│   │   └── .env  # Configuraciones del microservicio indexer
+│   ├── retrieval/
+│   │   ├── app/  # Código fuente del microservicio retrieval
+│   │   ├── Dockerfile
+│   │   ├── docker-compose.yml  # Levanta el microservicio retrieval
+│   │   └── .env  # Configuraciones del microservicio retrieval
+├── docker-compose.yml  # Orquestación externa para todos los componentes
+├── .env  # Configuraciones externas para la BD
+└── README.md  # Documento actual
+```
+
+---
+
+## **Despliegue con Docker Compose**
+
+### **1. Variables de entorno requeridas**
+Crea un archivo `.env` en cada uno de los microservicios (`indexer` y `retrieval`) con el siguiente contenido:
+
+#### **Archivo `.env` para `indexer`:**
+```env
+DB_HOST=postgres-db
+DB_NAME=rag_db
+DB_USER=ragadmin
+DB_PASSWORD=<tu-contraseña>
+DB_PORT=5432
+OPENAI_API_KEY=<tu-api-key-de-openai>
+EMBEDDING_MODEL=text-embedding-ada-002
+EMBEDDING_DIMENSION=768
+BATCH_SIZE=10
+CONSUMER_ID=<tu-consumer-id>
+```
+
+#### **Archivo `.env` para `retrieval`:**
+```env
+DB_HOST=postgres-db
+DB_PORT=5432
+DB_NAME=rag_db
+DB_USER=ragadmin
+DB_PASSWORD=<tu-contraseña>
+OPENAI_API_KEY=<tu-api-key-de-openai>
+EMBEDDING_MODEL=text-embedding-ada-002
+CHAT_COMPLETION_MODEL=gpt-4
+CONSUMER_ID=<tu-consumer-id>
+```
+
+### **2. Levantar todos los servicios**
+Desde la raíz del proyecto (`rag-system`), ejecuta:
+```bash
+docker-compose up --build
+```
+
+Esto levantará los siguientes servicios:
+- **Base de datos PostgreSQL:** Expuesta en el puerto **5432**.
+- **Microservicio `indexer`:** Expuesto en el puerto **8000**.
+- **Microservicio `retrieval`:** Expuesto en el puerto **8001**.
+
+---
+
+## **Consumo de los Endpoints**
+
+### **Microservicio `indexer`**
+- **Endpoint principal:** `/upload-csv/`
+- **URL:** `http://localhost:8000/upload-csv/`
+- **Método:** `POST`
+- **Headers:**
+  ```plaintext
+  x-consumer-id: <tu-consumer-id>
+  Content-Type: multipart/form-data
+  ```
+- **Body (form-data):**
+  ```plaintext
+  file: <archivo_csv>
+  ```
+- **Respuesta esperada:**
+  ```json
+  {
+    "status_code": 200,
+    "message": "Archivo procesado exitosamente. Se indexaron 100 películas."
+  }
+  ```
+
+### **Microservicio `retrieval`**
+- **Endpoint principal:** `/question-answer/`
+- **URL:** `http://localhost:8001/question-answer/`
+- **Método:** `POST`
+- **Headers:**
+  ```plaintext
+  x-consumer-id: <tu-consumer-id>
+  Content-Type: application/json
+  ```
+- **Body (JSON):**
+  ```json
+  {
+    "question": "What is The Matrix?"
+  }
+  ```
+- **Respuesta esperada:**
+  ```json
+  {
+    "status_code": 200,
+    "message": "Respuesta generada con éxito.",
+    "data": "Matrix es una película de ciencia ficción lanzada en 1999..."
+  }
+  ```
+
+---
+
+## **Detalles adicionales**
+Para obtener más información sobre cada microservicio, consulta el archivo `README.md` dentro del directorio correspondiente:
+
+- **`indexer`:** `microservices/indexer/README.md`
+- **`retrieval`:** `microservices/retrieval/README.md`
+
+---
+
+## **Contacto**
+Si tienes dudas o problemas, no dudes en abrir un issue en el repositorio.
+
+¡Gracias por utilizar el sistema RAG! 🚀

@@ -180,8 +180,3 @@ IMPORTANTE: Para levantar el microservicio, la Base de Datos debe estar arriba t
 
 ## **Contacto**
 Si tienes alguna duda o problema, no dudes en abrir un issue en el repositorio.
-
-¡Gracias por usar el microservicio `retrieval`! 🚀
-```
-
-Puedes copiar y pegar este contenido directamente en un archivo llamado `README.md` en el directorio del microservicio. Si necesitas algo más, ¡avísame! 🚀

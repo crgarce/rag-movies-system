@@ -100,7 +100,7 @@ title,image,plot
 2. **Variables de entorno:**
    - Configura las siguientes variables en `.env`:
      ```env
-     DB_HOST=localhost
+     DB_HOST=postgres-db
      DB_PORT=5432
      DB_NAME=rag_db
      DB_USER=ragadmin
@@ -116,3 +116,5 @@ title,image,plot
    - **Indexación:** Guarda los registros y embeddings en PostgreSQL con PGVector.
 
 ---
+## **Contacto**
+Si tienes alguna duda o problema, no dudes en abrir un issue en el repositorio.
