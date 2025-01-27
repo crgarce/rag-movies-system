@@ -8,7 +8,7 @@ Este microservicio es responsable de procesar un archivo CSV con información de
 El proyecto sigue los principios de **arquitectura limpia** para garantizar modularidad y escalabilidad. A continuación, la estructura principal:
 
 ```plaintext
-/
+/indexer
 ├── app/
 │   ├── main.py  # Punto de entrada principal.
 │   ├── application/

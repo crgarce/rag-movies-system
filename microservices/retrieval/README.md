@@ -8,111 +8,180 @@ Este microservicio es responsable de procesar un archivo CSV con información de
 El proyecto sigue los principios de **arquitectura limpia** para garantizar modularidad y escalabilidad. A continuación, la estructura principal:
 
 ```plaintext
-/
+# Microservicio `retrieval`
+
+El microservicio `retrieval` es una parte fundamental del sistema **RAG (Retrieval-Augmented Generation)**. Su objetivo es recibir preguntas del usuario, buscar información relevante en la base de conocimiento previamente indexada, y generar respuestas claras utilizando la API de OpenAI.
+
+---
+
+## **Estructura del Proyecto**
+
+La estructura del proyecto sigue principios de arquitectura limpia para garantizar modularidad, mantenibilidad y facilidad de pruebas.
+
+```plaintext
+/retrieval
 ├── app/
 │   ├── application/
 │   │   └── usecases/
-│   │       └── question_answer.py
+│   │       └── question_answer.py  # Caso de uso principal
 │   ├── core/
 │   │   ├── middleware/
-│   │   │   └── validate_consumer.py
+│   │   │   └── validate_consumer.py  # Middleware para validar Consumer-ID
 │   │   ├── models/
-│   │   │   └── models.py
+│   │   │   ├── models.py  # Modelos del dominio
+│   │   │   └── requests.py  # Modelos de entrada
 │   │   ├── utils/
-│   │   │   ├── config.py
-│   │   │   └── logger.py
+│   │   │   ├── config.py  # Configuración global
+│   │   │   └── logger.py  # Logs avanzados
 │   ├── infra/
 │   │   ├── repositories/
-│   │   │   └── pgvector_repository.py
+│   │   │   └── pgvector_repository.py  # Repositorio para interacción con la base de datos
 │   │   ├── services/
-│   │   │   ├── embedding_service.py
-│   │   │   └── response_generator.py
-│   │   └── container.py
-│   └── main.py
-├── db/
-│   └── init.sql
-├── .env
-├── Dockerfile
-├── docker-compose.yml
-├── Makefile
-└── requirements.txt
+│   │   │   ├── embedding_service.py  # Generación de embeddings
+│   │   │   └── response_generator.py  # Generación de respuestas
+│   │   └── container.py  # Inyección de dependencias
+│   └── main.py  # Punto de entrada del microservicio
+├── Dockerfile  # Configuración de la imagen Docker
+├── docker-compose.yml  # Levantar el servicio en local
+├── requirements.txt  # Dependencias del proyecto
+└── .env  # Variables de entorno (sensibles)
+```
+
+## **Dependencias**
+Estas son las principales dependencias del microservicio y sus propósitos:
+
+- **FastAPI**: Framework web para manejar los endpoints.
+- **Uvicorn**: Servidor ASGI para ejecutar la aplicación.
+- **OpenAI**: Cliente para interactuar con la API de OpenAI.
+- **Psycopg2**: Conector para PostgreSQL.
+- **Numpy**: Para cálculos numéricos necesarios en embeddings.
+- **Python-dotenv**: Manejo de variables de entorno.
+- **Tenacity**: Reintentos automáticos para llamadas a OpenAI.
+
+Consulta el archivo `requirements.txt` para ver las versiones específicas.
+
+---
+
+## **Archivo `.env`**
+El archivo `.env` contiene configuraciones sensibles y específicas del entorno. Asegúrate de crearlo en la raíz del proyecto.
+
+**Ejemplo de contenido de `.env`:**
+```env
+DB_HOST=postgres-db
+DB_PORT=5432
+DB_NAME=rag_db
+DB_USER=ragadmin
+DB_PASSWORD=<tu-contraseña>
+OPENAI_API_KEY=<tu-api-key-de-openai>
+EMBEDDING_MODEL=text-embedding-ada-002
+CHAT_COMPLETION_MODEL=gpt-3.5-turbo
+CONSUMER_ID=<tu-consumer-id>
 ```
 
 ---
 
-## Consumo del Endpoint
+## **Cómo consumir el servicio**
 
-### **Endpoint principal:**
-**`POST /movies-indexer/`**
+El endpoint principal del microservicio es:
 
-#### **Descripción:**
-Este endpoint recibe un archivo CSV con información de películas, genera embeddings para las descripciones y los indexa en la base de datos PostgreSQL.
+### **POST** `/question-answer/`
+Recibe una pregunta del usuario y devuelve una respuesta generada.
 
-#### **Headers requeridos:**
-- `Content-Type: multipart/form-data`
-- `x-consumer-id: <consumer-id>` (Clave API única para autorización)
-
-#### **Body:**
-- Tipo: `form-data`
-- Campo: `file`
-- Valor: Archivo CSV con las columnas `title`, `image`, y `plot`.
-
-#### **Ejemplo de cURL:**
-```bash
-curl -X POST "http://localhost:8000/movies-indexer/" \
--H "x-consumer-id: <tu-consumer-id>" \
--F "file=@/ruta/al/archivo.csv"
+#### **Headers**
+```plaintext
+x-consumer-id: <tu-consumer-id>
+Content-Type: application/json
 ```
 
-#### **Ejemplo de archivo CSV:**
-```csv
-title,image,plot
-"Matrix","https://image-url.com/matrix","A hacker discovers reality is a simulation."
-"Inception","https://image-url.com/inception","Dreams within dreams."
-```
-
-#### **Respuesta exitosa:**
+#### **Body (JSON)**
 ```json
 {
-  "status_code": 200,
-  "message": "Archivo procesado exitosamente. Se indexaron 2 películas."
+  "question": "What is The Matrix?"
 }
 ```
 
-#### **Errores posibles:**
-- **400 Bad Request:**
-  - El archivo no es un CSV válido.
-  - El archivo CSV no contiene las columnas requeridas.
-- **403 Forbidden:**
-  - `x-consumer-id` no es válido.
-- **500 Internal Server Error:**
-  - Error inesperado durante el procesamiento del archivo o la generación de embeddings.
+#### **Respuesta esperada**
+```json
+{
+  "status_code": 200,
+  "message": "Respuesta generada con éxito.",
+  "data": "Matrix es una película de ciencia ficción lanzada en 1999..."
+}
+```
 
 ---
 
-## Puntos importantes a tener en cuenta
+## **Cómo levantar el microservicio en local**
 
-1. **Requisitos previos:**
-   - PostgreSQL con PGVector configurado.
-   - Clave API válida para OpenAI.
-   - `consumer-id` único para autorización.
+### **1. Clonar el repositorio**
+```bash
+git clone <tu-repositorio>
+cd retrieval
+```
 
-2. **Variables de entorno:**
-   - Configura las siguientes variables en `.env`:
-     ```env
-     DB_HOST=localhost
-     DB_PORT=5432
-     DB_NAME=rag_db
-     DB_USER=ragadmin
-     DB_PASSWORD=securepassword
-     OPENAI_API_KEY=tu-openai-api-key
-     CONSUMER_ID=consumer-id-valido
-     ```
+### **2. Crear y activar un entorno virtual (en linux)**
+```bash
+python3 -m venv venv
+source venv/bin/activate
+```
 
-3. **Flujo del sistema:**
-   - **Recepción del archivo CSV.**
-   - **Validación del archivo:** Formato, columnas y contenido.
-   - **Generación de embeddings:** Llama a OpenAI para procesar las descripciones.
-   - **Indexación:** Guarda los registros y embeddings en PostgreSQL con PGVector.
+### **3. Instalar dependencias**
+```bash
+pip install -r requirements.txt
+```
+
+### **4. Crear el archivo `.env`**
+Configura las variables necesarias como se muestra en el ejemplo.
+
+### **5. Levantar el servicio**
+```bash
+uvicorn app.main:app --host 0.0.0.0 --port 8001
+```
 
 ---
+
+## **Cómo levantarlo con Docker**
+
+### **1. Construir la imagen Docker**
+Desde el directorio del microservicio, ejecuta:
+```bash
+docker build -t retrieval-service .
+```
+
+### **2. Levantar el contenedor**
+```bash
+docker-compose up --build
+```
+
+Esto levantará el microservicio en el puerto **8001**.
+IMPORTANTE: Para levantar el microservicio, la Base de Datos debe estar arriba tambien.
+
+---
+
+## **Explicación del flujo**
+
+1. **Recepción de la pregunta:**
+   - El usuario envía una pregunta al endpoint `/question-answer/`.
+   - Se valida el `x-consumer-id` a través del middleware.
+
+2. **Generación del embedding:**
+   - La pregunta se convierte en un embedding utilizando la API de OpenAI.
+
+3. **Consulta en la base de conocimiento:**
+   - Se utiliza el embedding generado para buscar películas relevantes en PostgreSQL con PGVector.
+
+4. **Generación de la respuesta:**
+   - Con base en los resultados, se genera una respuesta utilizando la API de Chat Completion de OpenAI.
+
+5. **Devolución al usuario:**
+   - Se retorna la respuesta generada al usuario en un formato JSON.
+
+---
+
+## **Contacto**
+Si tienes alguna duda o problema, no dudes en abrir un issue en el repositorio.
+
+¡Gracias por usar el microservicio `retrieval`! 🚀
+```
+
+Puedes copiar y pegar este contenido directamente en un archivo llamado `README.md` en el directorio del microservicio. Si necesitas algo más, ¡avísame! 🚀
