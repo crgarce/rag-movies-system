@@ -38,11 +38,18 @@ class CsvProcessor:
                     detail="El archivo CSV debe contener las columnas: title, image, plot."
                 )
 
-            movies = [
-                Movie(title=row["title"], image=row["image"], plot=row["plot"])
-                for _, row in df.iterrows()
-            ]
-            self.logger.info(f"Archivo procesado exitosamente. Registros: {len(movies)}")
+            movies = []
+            for index, row in df.iterrows():
+                if pd.isna(row["title"]) or pd.isna(row["image"]) or pd.isna(row["plot"]):
+                    self.logger.warning(f"Registro incompleto en la fila {index + 1}. Será descartado.")
+                    continue
+                try:
+                    movies.append(Movie(title=row["title"], image=row["image"], plot=row["plot"]))
+                except Exception as e:
+                    self.logger.warning(f"Error al procesar el registro en la fila {index + 1}: {e}. Será descartado.")
+                    continue
+
+            self.logger.info(f"Archivo procesado exitosamente. Registros válidos: {len(movies)}")
             return movies
 
         except Exception as e:

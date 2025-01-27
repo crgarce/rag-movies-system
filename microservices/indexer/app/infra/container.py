@@ -28,13 +28,13 @@ class Container:
             db_port=self.config.DB_PORT,
             db_name=self.config.DB_NAME,
             db_user=self.config.DB_USER,
-            db_password=self.config.DB_PASSWORD,
+            db_password=self.config.DB_PASSWORD
         )
         self.logger.info("Repositorio de base de datos inicializado.")
 
         self.embedding_service = EmbeddingService(
             api_key=self.config.OPENAI_API_KEY,
-            model=self.config.EMBEDDING_MODEL,
+            model=self.config.EMBEDDING_MODEL
         )
         self.logger.info("Servicio de embeddings inicializado.")
 
@@ -44,7 +44,7 @@ class Container:
         self.index_embeddings_use_case = IndexEmbeddingsUseCase(
             embedding_service=self.embedding_service,
             repository=self.pg_repository,
-            batch_size=self.config.BATCH_SIZE,
+            batch_size=self.config.BATCH_SIZE
         )
         self.logger.info("Caso de uso para indexar embeddings inicializado.")
 
